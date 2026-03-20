@@ -1,0 +1,100 @@
+Change authorization of user to be able to access the API
+---
+tags:
+  - Authentication
+description: Change the authorization level of a user. <br />
+            Values for new_auth_level are 0 for read access, 1 for write access, and 2 for admin access. <br /> <br />
+
+            Requires admin privileges (auth_level 2).
+            
+methods:
+  - PUT
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+
+security:
+  - bearerAuth: []
+
+requestBody:
+  description: The id of the user to change and the new authorization level (0 for read access, 1 for write access, 2 for admin access)
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - id
+          - auth_level
+        properties:
+          id:
+            type: integer
+          auth_level:
+            type: integer
+            enum: [0, 1, 2]
+      example:
+        id: 123
+        auth_level: 1
+        
+responses:
+  "200":
+    description: Authorization level changed successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+        example:
+          message: "Authorization level of user 123 successfully updated to 2"
+      
+  "400":
+    description: Bad Request - Missing or invalid input
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Username and new_auth_level are required fields, and new_auth_level must be 0, 1, or 2"
+  "401":
+    description: Unauthorized - User is not logged in
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"
+  "403":
+    description: Forbidden - User does not have admin privileges
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Forbidden"
+  "404":
+    description: Not Found - User with specified id does not exist
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "User not found"
+

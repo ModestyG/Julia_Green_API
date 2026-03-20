@@ -1,0 +1,106 @@
+Create a new person
+---
+methods:
+  - POST
+description: Create a new person with the provided name and age. 
+            Requires authentication with write access (auth_level 1 or higher).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+requestBody:
+  description: The person to add
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - name
+          - age
+        properties:
+          name:
+            type: string
+          age:
+            type: integer
+      example:
+        name: "Alice"
+        age: 30
+
+responses:
+  "201":
+    description: Person created successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            person:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                age:
+                  type: integer
+                  minimum: 0
+        example:
+          message: "Person created successfully"
+          person:
+            id: 1
+            name: "Alice"
+            age: 30
+  "400":
+    description: Invalid input data
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        examples:
+          missing_fields:
+            summary: Missing name or age
+            value:
+              error: "Name and age are required fields"
+          invalid_age:
+            summary: Age is not a valid integer
+            value:
+              error: "Age must be an integer"
+          invalid_name:
+            summary: Name is not a valid string
+            value:
+              error: "Name must be a string"
+  "401":
+    description: Unauthorized - User is not authenticated
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"
+  "403":
+    description: Forbidden - User does not have write access
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Forbidden"

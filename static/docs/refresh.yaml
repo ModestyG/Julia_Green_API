@@ -1,0 +1,44 @@
+Refresh access token using refresh token
+---
+tags:
+  - Authentication
+
+description: Refresh the access token using a valid refresh token. <br />
+             Requires a valid refresh token to be sent in the request header.
+
+methods:
+  - POST
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+responses:
+  "200":
+    description: Access token refreshed successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+        example:
+          access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNjE3MzQ1NjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  "401":
+    description: Unauthorized - Invalid or missing refresh token
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized - Invalid or missing refresh token"

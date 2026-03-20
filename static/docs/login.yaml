@@ -1,0 +1,75 @@
+Log in
+---
+tags:
+  - Authentication
+summary: Log in a user
+description: Log in a user with their username and password. Returns a success message and an access token if successful, or an error message if the credentials are invalid.
+
+methods:
+  - POST
+
+requestBody:
+  description: The user's login credentials
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+        - username
+        - password
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+      example:
+        username: "alice"
+        password: "password123"
+responses:
+  "200":
+    description: Login successful
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            access_token:
+              type: string
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+        example:
+          message: "Login successful"
+          access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNjE3MzQ1NjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          user:
+            id: 1
+            username: "alice"
+  "400":
+    description: Bad Request - Missing or invalid input
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+              error:
+                type: string
+        example:
+          error: "Username and password are required fields"
+  "401":
+    description: Unauthorized - Invalid credentials
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+              error:
+                type: string
+        example:
+          error: "Invalid username or password"

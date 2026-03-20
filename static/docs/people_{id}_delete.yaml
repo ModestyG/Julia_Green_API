@@ -1,0 +1,70 @@
+Delete a person by their unique ID
+---
+methods:
+  - DELETE
+description: Delete a person from the database using their unique ID. Returns a success message if the person was deleted, or an error message if the person was not found or if the user is not authenticated.
+            Requires authentication with write access (auth_level 1 or higher).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: path
+    name: id
+    schema:
+      type: integer
+    required: true
+    description: The unique ID of the person to delete
+
+responses:
+  "200":
+    description: Person deleted successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+        example:
+          message: "Person with id 1 deleted successfully"
+  "401":
+    description: Unauthorized - User is not authenticated
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"
+  "403":
+    description: Forbidden - User does not have write access
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Forbidden"
+  "404":
+    description: Person not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Person with id 10 not found"  

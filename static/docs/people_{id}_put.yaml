@@ -1,0 +1,103 @@
+Update the details of a person by their unique ID.
+---
+methods:
+  - PUT
+description: Update an existing person's details. 
+            Requires authentication with write access (auth_level 1 or higher).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: path
+    name: id
+    schema:
+      type: integer
+    required: true
+    description: The unique ID of the person to update
+
+requestBody:
+  description: The updated details of the person
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+          age:
+            type: integer
+      example:
+        name: "John Doe"
+        age: 31
+
+responses:
+  "200":
+    description: Person updated successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            age:
+              type: integer
+        example:
+          id: 1
+          name: John Doe
+          age: 31
+  "400":
+    description: Invalid input data
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Age must be an integer"
+  "401":
+    description: Unauthorized - User is not authenticated
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"
+  "403":
+    description: Forbidden - User does not have write access
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Forbidden"
+  "404":
+    description: Person with specified ID not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Person with id 10 not found" 

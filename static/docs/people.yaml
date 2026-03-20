@@ -1,0 +1,70 @@
+Get all people with optional filtering by age, name, or ID.
+---
+methods:
+  - GET
+description: Retrieve a list of people, optionally filtered by age, name, or ID. 
+            Requires authentication with read access (auth_level 0 or higher).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: query
+    name: age
+    schema:
+      type: integer
+    required: false
+    description: Filter people by age
+  - in: query
+    name: name
+    schema:
+      type: string
+    required: false
+    description: Filter people by name
+  - in: query
+    name: id
+    schema:
+      type: integer
+    required: false
+    description: Filter people by ID
+responses:
+  "200":
+    description: A list of people
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              age:
+                type: integer
+        example:
+          - id: 1
+            name: Alice
+            age: 30
+          - id: 2
+            name: Bob
+            age: 25
+  "401":
+    description: Unauthorized - User is not authenticated
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"

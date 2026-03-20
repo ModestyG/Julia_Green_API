@@ -1,0 +1,66 @@
+Get person by ID
+Retrieve a person by their unique ID.
+---
+methods:
+  - GET
+description: Retrieve a person by their unique ID. 
+            Requires authentication with read access (auth_level 0 or higher).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: path
+    name: id
+    schema:
+      type: integer
+    required: true
+    description: The unique ID of the people to retrieve
+responses:
+  "200":
+    description: A single person object
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            age:
+              type: integer
+        example:
+          id: 1
+          name: Alice
+          age: 30
+  "401":
+    description: Unauthorized - Authentication required
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Unauthorized"
+
+  "404":
+    description: Person not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Person with id 10 not found"

@@ -1,0 +1,73 @@
+Register a new user
+---
+tags:
+  - Authentication
+summary: Register a new user
+description: Register a new user with a unique username and password. Returns a success message and the user data if successful, or an error message if the username already exists or if the input data is invalid.
+methods:
+  - POST
+requestBody:
+  description: The credentials for the new user
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+        - username
+        - password
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+            minLength: 8
+      example:
+        username: "alice"
+        password: "password123"
+      
+responses:
+  "201":
+    description: User registered successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+        example:
+          message: "User registered successfully"
+  "400":
+    description: Bad Request - Missing or invalid input
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        examples:
+          missing_fields:
+            summary: Missing username or password
+            value:
+              error: "Username and password are required fields"
+          must_be_strings:
+            summary: Username or password is not a string
+            value:
+              error: "Username and password must be strings"
+          password_too_short:
+            summary: Password does not meet minimum length requirement
+            value:
+              error: "Password must be at least 8 characters long"
+  "409":
+    description: Conflict - Username already exists
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+        example:
+          error: "Username already exists"

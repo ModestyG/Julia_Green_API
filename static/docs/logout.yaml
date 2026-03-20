@@ -1,0 +1,29 @@
+Log out
+---
+tags:
+  - Authentication
+summary: Log out the current user
+description: Log out the current user by invalidating their access token. Returns a success message if successful, or an error message if the user is not logged in.
+
+methods:
+  - POST
+  
+responses:
+  "200":
+    description: Logout successful
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+    example:
+      message: "Logout successful"
+  "401":
+    description: Unauthorized - User is not logged in
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+    example:
+      error: "Unauthorized"
