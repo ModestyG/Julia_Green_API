@@ -35,7 +35,7 @@ def get_db_connection():
 
 swagger_template ={
     "swagger": "1.0",
-    "openapi": "3.0.0",
+    "openapi": "3.0.3",
     "uiversion": 3,
     "info": {
       "title": "People API",
@@ -81,9 +81,10 @@ swagger = Swagger(app, template=swagger_template, config=swagger_config)
 # Decorators for authentication
 
 def auth_required(level=1):
+    '''valid_jwt_required should not be used together with this decorator, it is already included in the implementation and will cause problems'''
     def auth_required_decorator(func):
         @wraps(func)
-        @jwt_required()
+        @valid_jwt_required()
         def wrapper(*args, **kwargs):
             print("Checking if user has authorization level", level)
             user_id = get_jwt_identity()
@@ -104,15 +105,23 @@ def auth_required(level=1):
         return wrapper
     return auth_required_decorator
 
-@app.before_request
-def check_revoked_token():
-    verify_jwt_in_request(optional=True, verify_type=False)
-    print("Checking if token is revoked")
-    jti = get_jwt().get('jti')
-    if jti in blocklisted_tokens:
-        print("Token is revoked, blocking access")
-        return jsonify({"error": "Token revoked"}), 401
-    print("Token is valid, allowing access")
+def valid_jwt_required(refresh=False):
+    def valid_jwt_required_decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print("Verifying JWT in request")
+            verify_jwt_in_request(refresh=refresh)
+
+            #Check if the token is revoked (i.e., if its jti is in the blocklist)
+            print("Checking if token is revoked")
+            jti = get_jwt().get('jti')
+            if jti in blocklisted_tokens:
+                print("Token is revoked, blocking access")
+                return jsonify({"error": "Token revoked"}), 401
+            print("Token is valid, allowing access")
+            return func(*args, **kwargs)
+        return wrapper
+    return valid_jwt_required_decorator
 
 @app.route('/', methods=['GET'])
 def index(): 
@@ -178,9 +187,8 @@ def register():
     
 @swag_from("static/docs/logout.yaml")
 @app.route('/logout', methods=['POST'])
-@jwt_required()
+@valid_jwt_required()
 def logout():
-    # Return here later to implement token blacklisting for logout functionality
     jti = get_jwt().get('jti')
     blocklisted_tokens.add(jti)
     
@@ -223,7 +231,7 @@ def change_auth():
 
 @swag_from("static/docs/people.yaml")
 @app.route("/people", methods=["GET"])
-@jwt_required()
+@valid_jwt_required()
 def get_people():
     """
     Get all people or filter by name, age, or ID
@@ -298,7 +306,7 @@ def add_person():
 
 @swag_from("static/docs/people_{id}.yaml")
 @app.route("/people/<id>", methods=["GET"])
-@jwt_required()
+@valid_jwt_required()
 def get_person(id):
     
     conn = get_db_connection()
@@ -352,12 +360,13 @@ def update_person(id):
         values.append(age)
     if not update_fields:
         return jsonify({"error": "No valid fields to update"}), 400
-    
+
     conn = get_db_connection()
     conn.autocommit=True
     cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM people WHERE id = %s", (id,))
+    person = cursor.fetchone()
 
-    person = cursor.execute("SELECT * FROM people WHERE id = %s", (id,))
     if not person:
         cursor.close()
         conn.close()    
@@ -372,11 +381,13 @@ def update_person(id):
         return jsonify({"message": "Person updated successfully"}), 200
     except Exception as e:
         print(f"Error updating person: {e}")
+        cursor.close()
+        conn.close()
         return jsonify({"error": f"Failed to update person"}), 500
-    
+
 @swag_from("static/docs/people_{id}_delete.yaml")
 @app.route("/people/<id>", methods=["DELETE"])
-@auth_required(level=1)
+@auth_required(level=1)  
 def delete_person(id):
     conn = get_db_connection()
     conn.autocommit=True
@@ -396,10 +407,10 @@ def delete_person(id):
     except Exception as e:
         print(f"Error deleting person: {e}")
         return jsonify({"error": f"Failed to delete person"}), 500
-
+    
 @swag_from("static/docs/refresh.yaml")
 @app.route("/refresh", methods=["POST"])
-@jwt_required(refresh=True)
+@valid_jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=current_user_id)
